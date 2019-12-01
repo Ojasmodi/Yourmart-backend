@@ -1,20 +1,20 @@
 package com.nagarro.controllers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
+import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
+import com.nagarro.models.Image;
 import com.nagarro.services.AdminService;
 import com.nagarro.services.ImageService;
 
@@ -27,16 +27,17 @@ public class ImageController {
 	@Autowired
 	AdminService adminService;
 
-//	@POST
-//	@Produces(MediaType.APPLICATION_JSON)
-//	@Consumes(MediaType.APPLICATION_JSON)
-//	@Path("/{product_id}/imageandpdf/add")
-//	public ResponseEntity multiUpload(@RequestParam("files") MultipartFile[] files) {
-//		List<Object> fileDownloadUrls = new ArrayList<>();
-//		Arrays.asList(files)
-//				.stream()
-//				.forEach(file -> fileDownloadUrls.add(uploadToLocalFileSystem(file).getBody()));
-//		return ResponseEntity.ok(fileDownloadUrls);
-//	}
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("/image/all/{product_id}")
+	public Response getImagesByProductId(@PathParam("product_id") String prodId) {
+        
+		Set<Image> images = imageService.getImageByProductId(prodId);
+		if (images.isEmpty()) {
+			return Response.status(Status.OK).entity(null).build();
+		}
+		return Response.status(Status.OK).entity(new GenericEntity<Set<Image>>(images) {
+		}).build();
+	}
 
 }

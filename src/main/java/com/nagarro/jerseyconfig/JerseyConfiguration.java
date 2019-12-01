@@ -5,6 +5,7 @@ import javax.ws.rs.ApplicationPath;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.stereotype.Component;
 
+import com.nagarro.controllers.CommentsController;
 import com.nagarro.controllers.ImageController;
 import com.nagarro.controllers.ProductController;
 import com.nagarro.controllers.SellerController;
@@ -22,5 +23,6 @@ public class JerseyConfiguration extends ResourceConfig {
 		register(ImageController.class);
 		register(SellerController.class);
 		register(CORSResponseFilter.class);
+		register(CommentsController.class);
 	}
 }

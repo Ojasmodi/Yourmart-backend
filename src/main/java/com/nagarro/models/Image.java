@@ -8,8 +8,12 @@ import javax.persistence.ManyToOne;
 
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 @Component
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})  // to remove problem of seller->product->seller->product
 public class Image {
 	
 	@Id
@@ -20,6 +24,7 @@ public class Image {
 	
 	private boolean isPrimaryImage;
 	
+	@JsonIgnore
 	@ManyToOne
 	Product product;
 

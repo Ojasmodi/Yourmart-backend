@@ -1,7 +1,7 @@
 package com.nagarro.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,10 +9,16 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Component
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})  // to remove problem of seller->product->seller->product
 public class Seller {
 	
 	@Id
@@ -21,15 +27,21 @@ public class Seller {
 	
 	String ownerName;
 	String companyName;
+	
 	String address;
+	
 	String email;
-	String Telephone;
+	
+	String telephone;
+	
 	String GSTnumber;
+	
 	String password;
 	String status;
 	
 	@OneToMany(mappedBy="seller")
-	List<Product> products=new ArrayList<>();
+	@LazyCollection(LazyCollectionOption.FALSE)
+	Set<Product> products=new HashSet<>();
 
 	public long getSellerId() {
 		return sellerId;
@@ -72,11 +84,11 @@ public class Seller {
 	}
 
 	public String getTelephone() {
-		return Telephone;
+		return telephone;
 	}
 
 	public void setTelephone(String telephone) {
-		Telephone = telephone;
+		this.telephone = telephone;
 	}
 
 	public String getGSTnumber() {
@@ -92,7 +104,7 @@ public class Seller {
 	}
 
 	public void setPassword(String password) {
-		password = password;
+		this.password = password;
 	}
 
 	public String getStatus() {
@@ -103,13 +115,25 @@ public class Seller {
 		this.status = status;
 	}
 
-	public List<Product> getProducts() {
+	public Set<Product> getProducts() {
 		return products;
 	}
 
-	public void setProducts(List<Product> products) {
+	public void setProducts(Set<Product> products) {
 		this.products = products;
 	}
+
+
+
+//	@Override
+//	public String toString() {
+//		return "Seller [sellerId=" + sellerId + ", ownerName=" + ownerName + ", companyName=" + companyName
+//				+ ", address=" + address + ", email=" + email + ", Telephone=" + Telephone + ", GSTnumber=" + GSTnumber
+//				+ ", password=" + password + ", status=" + status + ", products=" + products + "]";
+//	}
+	
+	
+	
 	
 
 }

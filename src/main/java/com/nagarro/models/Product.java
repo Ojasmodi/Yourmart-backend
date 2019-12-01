@@ -1,17 +1,30 @@
 package com.nagarro.models;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Component
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})  // to remove problem of seller->product->seller->product
 public class Product {
 
 	@Id
@@ -35,7 +48,8 @@ public class Product {
 	
 	
 	@OneToMany(mappedBy="product")
-	List<Image> images=new ArrayList<>();
+	@LazyCollection(LazyCollectionOption.FALSE)
+	Set<Image> images=new HashSet<>();
 	
 	String pdfPath;
 	
@@ -45,10 +59,23 @@ public class Product {
 	
 	String prodStatus;
 	
-	@OneToMany(mappedBy="product")
-	List<Comment> comments=new ArrayList<>();
+	@Column(nullable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date createdOn;
+	
+	
+	@Column(nullable = false)
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date updatedOn;
+	
+	
+	@OneToMany(mappedBy="product",cascade = CascadeType.PERSIST)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	Set<Comment> comments=new HashSet<>();
 	
 	@ManyToOne
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@JsonIgnore
 	Seller seller;
 
 	public String getProdId() {
@@ -123,13 +150,6 @@ public class Product {
 		this.category = category;
 	}
 
-	public List<Image> getImages() {
-		return images;
-	}
-
-	public void setImages(List<Image> images) {
-		this.images = images;
-	}
 
 	public String getPdfPath() {
 		return pdfPath;
@@ -196,12 +216,20 @@ public class Product {
 	public void setYMP(double yMP) {
 		YMP = yMP;
 	}
+	
+	public Set<Image> getImages() {
+		return images;
+	}
 
-	public List<Comment> getComments() {
+	public void setImages(Set<Image> images) {
+		this.images = images;
+	}
+
+	public Set<Comment> getComments() {
 		return comments;
 	}
 
-	public void setComments(List<Comment> comments) {
+	public void setComments(Set<Comment> comments) {
 		this.comments = comments;
 	}
 
@@ -212,6 +240,24 @@ public class Product {
 	public void setSeller(Seller seller) {
 		this.seller = seller;
 	}
+	
+	
+
+	public Date getCreatedOn() {
+		return createdOn;
+	}
+
+	public void setCreatedOn(Date createdOn) {
+		this.createdOn = createdOn;
+	}
+
+	public Date getUpdatedOn() {
+		return updatedOn;
+	}
+
+	public void setUpdatedOn(Date updatedOn) {
+		this.updatedOn = updatedOn;
+	}
 
 	@Override
 	public String toString() {
@@ -220,8 +266,11 @@ public class Product {
 				+ ", prodHeight=" + prodHeight + ", MRP=" + MRP + ", SSP=" + SSP + ", YMP=" + YMP + ", category="
 				+ category + ", images=" + images + ", pdfPath=" + pdfPath + ", prodColor=" + prodColor
 				+ ", prodWeight=" + prodWeight + ", prodBrand=" + prodBrand + ", prodStatus=" + prodStatus
-				+ ", comments=" + comments + ", seller=" + seller + "]";
-	}	
+				+ ", createdOn=" + createdOn + ", updatedOn=" + updatedOn + ", comments=" + comments + ", seller="
+				+ seller + "]";
+	}
+
+	
 	
 	
 	

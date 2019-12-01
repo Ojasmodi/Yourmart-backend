@@ -1,11 +1,13 @@
 package com.nagarro.services;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +19,7 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nagarro.models.Image;
 import com.nagarro.models.Product;
@@ -32,38 +35,35 @@ public class ProductService {
 
 	@Autowired
 	ProductRepository productRepository;
-	
+
 	@Autowired
 	Seller seller;
-	
+
 	@Autowired
 	SellerService sellerService;
-	
+
 	@Autowired
 	ImageService imageService;
-	
+
 	@Autowired
 	ImageRepository imageRepository;
-	
+
 	@Autowired
 	Image image;
 
-	private static final String IMAGE_UPLOAD_PATH = "D:\\Upload\\";
-	private static final String DOC_UPLOAD_PATH = "D:\\docs\\";
-	
+	private static final String IMAGE_UPLOAD_PATH = "C:\\Users\\ojasmodi\\Documents\\workspace-spring-tool-suite-4-4.4.0.RELEASE\\YourMart\\src\\main\\webapp\\images\\";
+	private static final String DOC_UPLOAD_PATH = "C:\\Users\\ojasmodi\\Documents\\workspace-spring-tool-suite-4-4.4.0.RELEASE\\YourMart\\src\\main\\webapp\\docs\\";
+
 	public Product findByProductId(String id) {
-		Product product = productRepository.getOne(id);
+		Product product = productRepository.findById(id).orElse(null);
 		return product;
 	}
-	
 
 	public Product addProduct(HttpServletRequest request) {
 
 		String fileLocation;
-		int code = 200;
 		HashMap<String, String> hm = new HashMap<String, String>();
-		List<Image> Images = new ArrayList<Image>();
-		String msg = "Files uploaded successfully";
+		Set<Image> Images = new HashSet<Image>();
 		if (ServletFileUpload.isMultipartContent(request)) {
 			FileItemFactory factory = new DiskFileItemFactory();
 			ServletFileUpload fileUpload = new ServletFileUpload(factory);
@@ -71,10 +71,7 @@ public class ProductService {
 				List<FileItem> items = fileUpload.parseRequest(request);
 				if (items != null) {
 					Iterator<FileItem> iter = items.iterator();
-					/*
-					 * Return true if the instance represents a simple form field. Return false if
-					 * it represents an uploaded file.
-					 */
+
 					while (iter.hasNext()) {
 						final FileItem item = iter.next();
 						final String itemName = item.getName();// related to file i.e. name of file
@@ -82,57 +79,51 @@ public class ProductService {
 						final String fieldValue = item.getString();// value of form-data
 						if (item.isFormField()) {
 							hm.put(fieldName, fieldValue);
-							//System.out.println("Field Name: " + fieldName + ", Field Value: " + fieldValue);
 						} else {
-                            // item is image or pdf
-							//System.out.println(fieldName);
+							// item is image or pdf
 							if (itemName.endsWith("png") || itemName.endsWith("jpg") || itemName.endsWith("jpeg")) {
 								fileLocation = uploadFileToDirectory(item, itemName, IMAGE_UPLOAD_PATH);
-								Image img=new Image();
+								Image img = new Image();
 								img.setImagePath(fileLocation);
-//								System.out.println(fieldName);
-//								System.out.println(fileLocation);
 								if (fieldName.equals("primaryImage")) {
 									img.setIsPrimaryImage(true);
 								}
 								Images.add(img);
-								System.out.println(img.getImagePath());
-								System.out.println(img.getIsPrimaryImage());
-							}
-							else if(itemName.endsWith("pdf") || itemName.endsWith("doc") || itemName.endsWith("txt")) {
+							} else if (itemName.endsWith("pdf") || itemName.endsWith("doc")
+									|| itemName.endsWith("txt")) {
 								fileLocation = uploadFileToDirectory(item, itemName, DOC_UPLOAD_PATH);
 								product.setPdfPath(fileLocation);
 							}
 						}
 					}
 				}
-				//System.out.println(Images.size());
 				createProductFromFormFields(hm);
-				
+
+				product.setImages(Images);
+				// product.setImages((Set<Image>)Images);
+
+				product.setSeller(seller);
+				productRepository.save(product);
 				Iterator<Image> it = Images.iterator();
 				while (it.hasNext()) {
-					Image itt=(Image)it.next();
-					System.out.println( itt.getImagePath());
-					System.out.println(itt.getIsPrimaryImage());
-
-					product.getImages().add((Image) itt);
-					
-				}System.out.println(product.getImages().size());
+					Image img = (Image) it.next();
+					img.setProduct(product);
+					product.getImages().add(img);
+				}
 				imageService.saveImage(product.getImages());
-				productRepository.save(product);
-				System.out.println(product);
-				
+				// Set<Product> products=new HashSet<>();
+				// products.add(product);
+				// seller.setProducts(products);
+
+//				seller.getProducts().add(product);
+				sellerService.addSeller(seller);
+
 			} catch (FileUploadException e) {
-				code = 404;
-				msg = e.getMessage();
 				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
-				code = 404;
-				msg = e.getMessage();
 			}
 		}
-
 		return product;
 	}
 
@@ -153,63 +144,96 @@ public class ProductService {
 				product.setLongDesc((String) m.getValue());
 				break;
 			case "prodLength":
-				product.setProdLength(Double.parseDouble((String)m.getValue()) );
+				product.setProdLength(Double.parseDouble((String) m.getValue()));
 				break;
 			case "prodBreadth":
-				product.setProdBreadth(Double.parseDouble((String)m.getValue()));
+				product.setProdBreadth(Double.parseDouble((String) m.getValue()));
 				break;
 			case "prodHeight":
-				product.setProdHeight(Double.parseDouble((String)m.getValue()));
+				product.setProdHeight(Double.parseDouble((String) m.getValue()));
 				break;
-			case "MRP":
-				product.setMRP(Double.parseDouble((String)m.getValue()));
+			case "mrp":
+				product.setMRP(Double.parseDouble((String) m.getValue()));
 				break;
-			case "SSP":
-				product.setSSP(Double.parseDouble((String)m.getValue()));
+			case "ssp":
+				product.setSSP(Double.parseDouble((String) m.getValue()));
 				break;
-			case "YMP":
-				product.setYMP(Double.parseDouble((String)m.getValue()));
+			case "ymp":
+				product.setYMP(Double.parseDouble((String) m.getValue()));
 				break;
 			case "category":
-				product.setProdName((String) m.getValue());
+				product.setCategory((String) m.getValue());
 				break;
 			case "prodColor":
 				product.setProdColor((String) m.getValue());
 			case "prodWeight":
-				product.setProdWeight(Double.parseDouble((String)m.getValue()));
+				product.setProdWeight(Double.parseDouble((String) m.getValue()));
 			case "prodBrand":
-				product.setProdName((String) m.getValue());
-				break;
-			case "prodStatus":
-				product.setProdName((String) m.getValue());
+				product.setProdBrand((String) m.getValue());
 				break;
 			case "sellerId":
-				seller=sellerService.findBySellerId(Long.parseLong((String)m.getValue()));
-				product.setSeller(seller);
+				seller = sellerService.findBySellerId(Long.parseLong((String) m.getValue()));
+				System.out.println(String.valueOf(seller));
+				// product.setSeller(seller);
 			}
 		}
-		UUID uniqueKey = UUID.randomUUID();
-		product.setProdId(String.valueOf(uniqueKey));
+		product.setProdStatus("NEW");
+		product.setCreatedOn(new Date());
+		product.setUpdatedOn(new Date());
+		// System.out.println(product);
+		product.setProdId(String.valueOf(UUID.randomUUID()));
 	}
 
 	// method to upload image to a particular directory
 	public String uploadFileToDirectory(FileItem item, String fileName, String directoryPath) {
 		File file;
-		String fileLocation=null;
+		String fileLocation = null;
 		try {
 			if (fileName.lastIndexOf("\\") >= 0) {
-				fileLocation = directoryPath + fileName.substring(fileName.lastIndexOf("\\"));
-				file = new File(fileLocation);
+				fileLocation = directoryPath + Math.random() + fileName.substring(fileName.lastIndexOf("\\"));
 			} else {
-				fileLocation = directoryPath + fileName.substring(fileName.lastIndexOf("\\") + 1);
-				file = new File(fileLocation);
+				fileLocation = directoryPath + Math.random() + fileName.substring(fileName.lastIndexOf("\\") + 1);
 			}
+			file = new File(fileLocation);
 			item.write(file);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			return fileLocation;
 		}
+	}
+
+	public List<Product> getAllProducts() throws Exception {
+		List<Product> allProducts = productRepository.findAll();
+		return allProducts;
+	}
+
+	public Product getProductByProductId(String id) throws Exception {
+		Product product = productRepository.findById(id).orElse(null);
+		return product;
+	}
+
+	public Product updateOtherdetailsOfProduct(Product currentProduct, long sId) throws Exception {
+//		currentProduct.setUpdatedOn(new Date());
+		Seller seller = sellerService.findBySellerId(sId);
+		currentProduct.setSeller(seller);
+		Product product = productRepository.save(currentProduct);
+
+		seller.getProducts().add(product);
+		sellerService.addSeller(seller);
+		return product;
+	}
+
+	@Transactional
+	public boolean updateStatusOfProduct(Product currentProduct) {
+		productRepository.updateStatusOfProduct(currentProduct.getProdId(), currentProduct.getProdStatus());
+		return true;
+
+	}
+
+	public void saveProduct(Product product2) {
+		productRepository.save(product2);
+		
 	}
 
 }

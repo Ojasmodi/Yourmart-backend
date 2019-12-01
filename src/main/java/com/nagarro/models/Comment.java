@@ -12,8 +12,14 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@Component
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})  // to remove problem of seller->product->seller->product
 public class Comment {
 	
 	@Id
@@ -22,7 +28,9 @@ public class Comment {
 	
 	String commentValue;
 	
-	long commentByUserId;
+	String commentByUserId;
+	
+	String commentByUserName;
 	
 	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
@@ -30,7 +38,20 @@ public class Comment {
 	private Date dateOfComment;
 	
 	@ManyToOne
+	@JsonIgnore
 	private Product product;
+
+	public String getCommentByUserName() {
+		return commentByUserName;
+	}
+
+	public void setCommentByUserName(String commentByUserName) {
+		this.commentByUserName = commentByUserName;
+	}
+
+	public void setCommentByUserId(String commentByUserId) {
+		this.commentByUserId = commentByUserId;
+	}
 
 	public Product getProduct() {
 		return product;
@@ -56,21 +77,27 @@ public class Comment {
 		this.commentValue = commentValue;
 	}
 
-	public long getCommentByUserId() {
-		return commentByUserId;
-	}
 
-	public void setCommentByUserId(long commentByUserId) {
-		this.commentByUserId = commentByUserId;
+	public String getCommentByUserId() {
+		return commentByUserId;
 	}
 
 	public Date getDateOfComment() {
 		return dateOfComment;
 	}
 
+	@Override
+	public String toString() {
+		return "Comment [commentId=" + commentId + ", commentValue=" + commentValue + ", commentByUserId="
+				+ commentByUserId + ", commentByUserName=" + commentByUserName + ", dateOfComment=" + dateOfComment
+				+ ", product=" + product + "]";
+	}
+
 	public void setDateOfComment(Date dateOfComment) {
 		this.dateOfComment = dateOfComment;
 	}
+	
+	
 	
 	
 
