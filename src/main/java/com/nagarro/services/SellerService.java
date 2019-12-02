@@ -19,8 +19,8 @@ public class SellerService {
 	@Autowired
 	Seller seller;
 
-	public Seller authenticateSeller(String ownerName, String password) {
-		seller = sellerRepository.findByOwnerName(ownerName);
+	public Seller authenticateSeller(String email, String password) {
+		seller = sellerRepository.findByEmail(email);
 		if (seller != null) {
 			if (seller.getPassword().equals(password)) {
 				return seller;

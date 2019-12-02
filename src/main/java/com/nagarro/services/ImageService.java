@@ -1,11 +1,11 @@
 package com.nagarro.services;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.nagarro.models.Image;
 import com.nagarro.models.Product;
@@ -30,10 +30,6 @@ public class ImageService {
 		}
 	}
 
-//	public List<Image> getAllImages() {
-//		List<Image> images=imageRepository.findAll();
-//		return images;
-//	}
 
 	public Set<Image> getImageByProductId(String prodId) {
 		//product.setProdId(prodId);
@@ -45,5 +41,14 @@ public class ImageService {
 //		List<Image> images=imageRepository.findByProductId(prodId);
 		return images;
 	}
+
+	@Transactional
+	public void updatePathOfPrimaryImage(String fileLocation, long imageId) {
+		System.out.println(fileLocation+" DFD"+ imageId);
+		imageRepository.updatePathOfPrimaryImage(fileLocation, imageId);
+		
+	}
+
+
 
 }

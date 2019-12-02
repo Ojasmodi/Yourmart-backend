@@ -214,7 +214,7 @@ public class ProductService {
 	}
 
 	public Product updateOtherdetailsOfProduct(Product currentProduct, long sId) throws Exception {
-//		currentProduct.setUpdatedOn(new Date());
+		currentProduct.setUpdatedOn(new Date());
 		Seller seller = sellerService.findBySellerId(sId);
 		currentProduct.setSeller(seller);
 		Product product = productRepository.save(currentProduct);
@@ -226,6 +226,7 @@ public class ProductService {
 
 	@Transactional
 	public boolean updateStatusOfProduct(Product currentProduct) {
+		currentProduct.setUpdatedOn(new Date());
 		productRepository.updateStatusOfProduct(currentProduct.getProdId(), currentProduct.getProdStatus());
 		return true;
 
@@ -234,6 +235,91 @@ public class ProductService {
 	public void saveProduct(Product product2) {
 		productRepository.save(product2);
 		
+	}
+
+	@Transactional
+	public boolean updateFilesOfProduct(HttpServletRequest request, String prodId) {
+		String fileLocation;
+			FileItemFactory factory = new DiskFileItemFactory();
+			ServletFileUpload fileUpload = new ServletFileUpload(factory);
+			try {
+				List<FileItem> items = fileUpload.parseRequest(request);
+				if (items != null) {
+					Iterator<FileItem> iter = items.iterator();
+
+					while (iter.hasNext()) {
+						final FileItem item = iter.next();
+						if(item.getFieldName().equals("primaryImage")) {
+							fileLocation = uploadFileToDirectory(item, item.getName(), IMAGE_UPLOAD_PATH);
+							long imageID=0;
+							product=getProductByProductId(prodId);
+							Set<Image> images=product.getImages();
+							for(Image i:images) {
+								if(i.getIsPrimaryImage()) {
+                                    imageID=i.getImageId();
+								}
+							}
+							imageService.updatePathOfPrimaryImage(fileLocation,imageID);
+							
+						}
+						else {
+							fileLocation = uploadFileToDirectory(item, item.getName(), DOC_UPLOAD_PATH);
+							productRepository.updatePdfPath(fileLocation,prodId);
+						}
+					}
+				}
+
+			} catch (FileUploadException e) {
+				e.printStackTrace();
+				return false;
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		return true;
+	}
+
+	public boolean addNewImagesOfProduct(HttpServletRequest request, long sellerId,String prodId) throws Exception {
+		String fileLocation;
+		product=findByProductId(prodId);
+		seller=sellerService.findBySellerId(sellerId);
+		FileItemFactory factory = new DiskFileItemFactory();
+		Set<Image> images=new HashSet<>();
+		ServletFileUpload fileUpload = new ServletFileUpload(factory);
+		try {
+			List<FileItem> items = fileUpload.parseRequest(request);
+			if (items != null) {
+				Iterator<FileItem> iter = items.iterator();
+
+				while (iter.hasNext()) {
+					final FileItem item = iter.next();
+						fileLocation = uploadFileToDirectory(item, item.getName(), IMAGE_UPLOAD_PATH);
+						Image img=new Image();
+						img.setImagePath(fileLocation);
+						images.add(img);
+				}
+			}
+		product.setImages(images);
+		product.setSeller(seller);
+		product.setUpdatedOn(new Date());
+		productRepository.save(product);
+		Iterator<Image> it = images.iterator();
+		while (it.hasNext()) {
+			Image img = (Image) it.next();
+			img.setProduct(product);
+			product.getImages().add(img);
+		}
+		imageService.saveImage(product.getImages());
+		sellerService.addSeller(seller);
+
+		} catch (FileUploadException e) {
+			e.printStackTrace();
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	return true;
 	}
 
 }

@@ -52,7 +52,18 @@ public class ProductController {
 		return Response.status(Status.OK).entity(product).build();
 	}
 	
+	
 	@POST
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Path("/add/otherimages/{sellerId}/{prodId}")
+	public Response addNewImagesOfProduct(@Context HttpServletRequest request,@PathParam("sellerId") long sellerId,@PathParam("prodId") String prodId) throws Exception {
+
+		boolean result = productService.addNewImagesOfProduct(request,sellerId,prodId);
+		return Response.status(Status.OK).entity(result).build();
+	}
+	
+	@PUT
 	@Path("/update/status")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.TEXT_PLAIN)
@@ -62,6 +73,16 @@ public class ProductController {
 		return Response.status(Status.OK).entity("true").build();
 	}
 	
+	@PUT
+	@Path("/update/primaryImageOrUserGuide/{prodId}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response updateFilesOfProduct(@Context HttpServletRequest request,@PathParam("prodId") String prodId) throws Exception {
+
+		boolean resultStatus=productService.updateFilesOfProduct(request,prodId);
+		return Response.status(Status.OK).entity(resultStatus).build();
+	}
+		
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

@@ -33,7 +33,7 @@ public class UserController {
 	@Path("/seller/login")
 	public Response loginSeller(Seller currentSeller ) throws Exception {
 
-		currentSeller = sellerService.authenticateSeller(currentSeller.getOwnerName(), currentSeller.getPassword());
+		currentSeller = sellerService.authenticateSeller(currentSeller.getEmail(), currentSeller.getPassword());
 		if (currentSeller == null) {
 			return Response.status(Status.OK).entity(null).build();
 		}
@@ -48,7 +48,7 @@ public class UserController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/admin/login")
 	public Response loginAdmin(Admin currentAdmin) throws Exception  {
-		currentAdmin = adminService.authenticateAdmin(currentAdmin.getUsername(), currentAdmin.getPassword());
+		currentAdmin = adminService.authenticateAdmin(currentAdmin.getEmail(), currentAdmin.getPassword());
 		if (currentAdmin == null) {
 			return Response.status(Status.OK).entity(null).build();
 		}

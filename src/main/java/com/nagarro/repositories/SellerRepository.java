@@ -16,4 +16,7 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
 	@Query("update Seller set status=?2 where sellerId=?1")
 	public void updateStatusOfSeller(long sellerId, String status);
 
+	@Query("from Seller where email=?1")
+	public Seller findByEmail(String email);
+
 }
