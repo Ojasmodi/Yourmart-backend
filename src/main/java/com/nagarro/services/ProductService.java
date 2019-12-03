@@ -1,6 +1,5 @@
 package com.nagarro.services;
 
-import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +25,8 @@ import com.nagarro.models.Product;
 import com.nagarro.models.Seller;
 import com.nagarro.repositories.ImageRepository;
 import com.nagarro.repositories.ProductRepository;
+import com.nagarro.utils.Constants;
+import com.nagarro.utils.FileUploader;
 
 @Service
 public class ProductService {
@@ -50,17 +51,18 @@ public class ProductService {
 
 	@Autowired
 	Image image;
+	
+	@Autowired
+	FileUploader fileupload;
 
-	private static final String IMAGE_UPLOAD_PATH = "C:\\Users\\ojasmodi\\Documents\\workspace-spring-tool-suite-4-4.4.0.RELEASE\\YourMart\\src\\main\\webapp\\images\\";
-	private static final String DOC_UPLOAD_PATH = "C:\\Users\\ojasmodi\\Documents\\workspace-spring-tool-suite-4-4.4.0.RELEASE\\YourMart\\src\\main\\webapp\\docs\\";
-
+	// method to product to find by product Id
 	public Product findByProductId(String id) {
 		Product product = productRepository.findById(id).orElse(null);
 		return product;
 	}
 
+	// method to add new product
 	public Product addProduct(HttpServletRequest request) {
-
 		String fileLocation;
 		HashMap<String, String> hm = new HashMap<String, String>();
 		Set<Image> Images = new HashSet<Image>();
@@ -82,7 +84,7 @@ public class ProductService {
 						} else {
 							// item is image or pdf
 							if (itemName.endsWith("png") || itemName.endsWith("jpg") || itemName.endsWith("jpeg")) {
-								fileLocation = uploadFileToDirectory(item, itemName, IMAGE_UPLOAD_PATH);
+								fileLocation = fileupload.uploadFileToDirectory(item, itemName, Constants.IMAGE_UPLOAD_PATH);
 								Image img = new Image();
 								img.setImagePath(fileLocation);
 								if (fieldName.equals("primaryImage")) {
@@ -91,17 +93,14 @@ public class ProductService {
 								Images.add(img);
 							} else if (itemName.endsWith("pdf") || itemName.endsWith("doc")
 									|| itemName.endsWith("txt")) {
-								fileLocation = uploadFileToDirectory(item, itemName, DOC_UPLOAD_PATH);
+								fileLocation = fileupload.uploadFileToDirectory(item, itemName, Constants.DOC_UPLOAD_PATH);
 								product.setPdfPath(fileLocation);
 							}
 						}
 					}
 				}
 				createProductFromFormFields(hm);
-
 				product.setImages(Images);
-				// product.setImages((Set<Image>)Images);
-
 				product.setSeller(seller);
 				productRepository.save(product);
 				Iterator<Image> it = Images.iterator();
@@ -111,11 +110,6 @@ public class ProductService {
 					product.getImages().add(img);
 				}
 				imageService.saveImage(product.getImages());
-				// Set<Product> products=new HashSet<>();
-				// products.add(product);
-				// seller.setProducts(products);
-
-//				seller.getProducts().add(product);
 				sellerService.addSeller(seller);
 
 			} catch (FileUploadException e) {
@@ -127,6 +121,7 @@ public class ProductService {
 		return product;
 	}
 
+	// method to create a new product from hashmap
 	public void createProductFromFormFields(HashMap<String, String> hm) throws Exception {
 
 		for (Map.Entry m : hm.entrySet()) {
@@ -166,53 +161,37 @@ public class ProductService {
 				break;
 			case "prodColor":
 				product.setProdColor((String) m.getValue());
+				break;
 			case "prodWeight":
 				product.setProdWeight(Double.parseDouble((String) m.getValue()));
+				break;
 			case "prodBrand":
 				product.setProdBrand((String) m.getValue());
 				break;
 			case "sellerId":
 				seller = sellerService.findBySellerId(Long.parseLong((String) m.getValue()));
-				System.out.println(String.valueOf(seller));
-				// product.setSeller(seller);
 			}
 		}
 		product.setProdStatus("NEW");
 		product.setCreatedOn(new Date());
 		product.setUpdatedOn(new Date());
-		// System.out.println(product);
 		product.setProdId(String.valueOf(UUID.randomUUID()));
 	}
 
-	// method to upload image to a particular directory
-	public String uploadFileToDirectory(FileItem item, String fileName, String directoryPath) {
-		File file;
-		String fileLocation = null;
-		try {
-			if (fileName.lastIndexOf("\\") >= 0) {
-				fileLocation = directoryPath + Math.random() + fileName.substring(fileName.lastIndexOf("\\"));
-			} else {
-				fileLocation = directoryPath + Math.random() + fileName.substring(fileName.lastIndexOf("\\") + 1);
-			}
-			file = new File(fileLocation);
-			item.write(file);
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			return fileLocation;
-		}
-	}
 
+	//method to get all products
 	public List<Product> getAllProducts() throws Exception {
 		List<Product> allProducts = productRepository.findAll();
 		return allProducts;
 	}
 
+	// method to get product by product Id
 	public Product getProductByProductId(String id) throws Exception {
 		Product product = productRepository.findById(id).orElse(null);
 		return product;
 	}
 
+	// method to update other details of the project
 	public Product updateOtherdetailsOfProduct(Product currentProduct, long sId) throws Exception {
 		currentProduct.setUpdatedOn(new Date());
 		Seller seller = sellerService.findBySellerId(sId);
@@ -224,6 +203,7 @@ public class ProductService {
 		return product;
 	}
 
+	//method to update status of the product
 	@Transactional
 	public boolean updateStatusOfProduct(Product currentProduct) {
 		currentProduct.setUpdatedOn(new Date());
@@ -232,11 +212,12 @@ public class ProductService {
 
 	}
 
+	// method to save/update new product
 	public void saveProduct(Product product2) {
 		productRepository.save(product2);
-		
 	}
 
+	// method of update primary Image or pdf document of the existing product
 	@Transactional
 	public boolean updateFilesOfProduct(HttpServletRequest request, String prodId) {
 		String fileLocation;
@@ -250,9 +231,10 @@ public class ProductService {
 					while (iter.hasNext()) {
 						final FileItem item = iter.next();
 						if(item.getFieldName().equals("primaryImage")) {
-							fileLocation = uploadFileToDirectory(item, item.getName(), IMAGE_UPLOAD_PATH);
+							fileLocation = fileupload.uploadFileToDirectory(item, item.getName(), Constants.IMAGE_UPLOAD_PATH);
 							long imageID=0;
 							product=getProductByProductId(prodId);
+							product.setUpdatedOn(new Date());
 							Set<Image> images=product.getImages();
 							for(Image i:images) {
 								if(i.getIsPrimaryImage()) {
@@ -263,7 +245,7 @@ public class ProductService {
 							
 						}
 						else {
-							fileLocation = uploadFileToDirectory(item, item.getName(), DOC_UPLOAD_PATH);
+							fileLocation = fileupload.uploadFileToDirectory(item, item.getName(), Constants.DOC_UPLOAD_PATH);
 							productRepository.updatePdfPath(fileLocation,prodId);
 						}
 					}
@@ -278,7 +260,9 @@ public class ProductService {
 			}
 		return true;
 	}
-
+	
+	
+// method to add images to the existing product
 	public boolean addNewImagesOfProduct(HttpServletRequest request, long sellerId,String prodId) throws Exception {
 		String fileLocation;
 		product=findByProductId(prodId);
@@ -293,7 +277,7 @@ public class ProductService {
 
 				while (iter.hasNext()) {
 					final FileItem item = iter.next();
-						fileLocation = uploadFileToDirectory(item, item.getName(), IMAGE_UPLOAD_PATH);
+						fileLocation = fileupload.uploadFileToDirectory(item, item.getName(), Constants.IMAGE_UPLOAD_PATH);
 						Image img=new Image();
 						img.setImagePath(fileLocation);
 						images.add(img);

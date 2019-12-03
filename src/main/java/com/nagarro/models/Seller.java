@@ -124,16 +124,4 @@ public class Seller {
 	}
 
 
-
-//	@Override
-//	public String toString() {
-//		return "Seller [sellerId=" + sellerId + ", ownerName=" + ownerName + ", companyName=" + companyName
-//				+ ", address=" + address + ", email=" + email + ", Telephone=" + Telephone + ", GSTnumber=" + GSTnumber
-//				+ ", password=" + password + ", status=" + status + ", products=" + products + "]";
-//	}
-	
-	
-	
-	
-
 }

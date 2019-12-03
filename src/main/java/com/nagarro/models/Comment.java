@@ -86,12 +86,6 @@ public class Comment {
 		return dateOfComment;
 	}
 
-	@Override
-	public String toString() {
-		return "Comment [commentId=" + commentId + ", commentValue=" + commentValue + ", commentByUserId="
-				+ commentByUserId + ", commentByUserName=" + commentByUserName + ", dateOfComment=" + dateOfComment
-				+ ", product=" + product + "]";
-	}
 
 	public void setDateOfComment(Date dateOfComment) {
 		this.dateOfComment = dateOfComment;

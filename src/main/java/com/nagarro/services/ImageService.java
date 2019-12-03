@@ -23,6 +23,7 @@ public class ImageService {
 	@Autowired
 	Product product;
 	
+	// method to add/save a new Image
 	public void saveImage(Set<Image> newImages) {
 		Iterator it=newImages.iterator();
 		while(it.hasNext()) {
@@ -30,18 +31,14 @@ public class ImageService {
 		}
 	}
 
-
+    // method to get image by productId
 	public Set<Image> getImageByProductId(String prodId) {
-		//product.setProdId(prodId);
 		Product product=productService.findByProductId(prodId);
-		//Set<Image> images=imageRepository.findByProductId(prodId);
 		Set<Image> images=product.getImages();
-//		for(Image i:images)
-//			System.out.println(i.getImagePath());
-//		List<Image> images=imageRepository.findByProductId(prodId);
 		return images;
 	}
 
+	// method to update path of primary image/primary image of a particular product
 	@Transactional
 	public void updatePathOfPrimaryImage(String fileLocation, long imageId) {
 		System.out.println(fileLocation+" DFD"+ imageId);
