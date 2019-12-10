@@ -14,13 +14,13 @@ import com.nagarro.repositories.SellerRepository;
 public class SellerService {
 	
 	@Autowired
-	SellerRepository sellerRepository;
+	private SellerRepository sellerRepository;
 	
 	@Autowired
-	Seller seller;
+	private Seller seller;
 
 	//method to authenticate seller by email and password
-	public Seller authenticateSeller(String email, String password) {
+	public Seller authenticateSeller(String email, String password) throws Exception {
 		seller = sellerRepository.findByEmail(email);
 		if (seller != null) {
 			if (seller.getPassword().equals(password)) {
@@ -43,7 +43,7 @@ public class SellerService {
 	}
 
 	// method to get all sellers
-	public List<Seller> getAllSellers() {
+	public List<Seller> getAllSellers() throws Exception {
 		List<Seller> allSellers=sellerRepository.findAll();
 		return allSellers;
 	}
@@ -54,5 +54,7 @@ public class SellerService {
 		sellerRepository.updateStatusOfSeller(currentSeller.getSellerId(),currentSeller.getStatus());
 		return true;
 	}
+
+
 
 }

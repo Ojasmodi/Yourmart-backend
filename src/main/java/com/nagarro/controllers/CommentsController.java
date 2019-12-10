@@ -18,10 +18,10 @@ import com.nagarro.services.CommentsService;
 public class CommentsController {
 
 	@Autowired
-	Comment comment;
+	private Comment comment;
 
 	@Autowired
-	CommentsService commentService;
+	private CommentsService commentService;
 
 	@POST
 	@Path("/add/{prodId}")

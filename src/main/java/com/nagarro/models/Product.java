@@ -28,36 +28,36 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class Product {
 
 	@Id
-	String prodId;
+	private String prodId;
 	
-	String prodCode;
-	String prodName;
+	private String prodCode;
+	private String prodName;
 	
-	String shortDes;
-	String longDesc;
+	private String shortDes;
+	private String longDesc;
 	
-	double prodLength;
-	double prodBreadth;
-	double prodHeight;
+	private double prodLength;
+	private double prodBreadth;
+	private double prodHeight;
 	
-	double MRP;
-	double SSP;
-	double YMP;
+	private double MRP;
+	private double SSP;
+	private double YMP;
 	
-	String category;
+	private String category;
 	
 	
 	@OneToMany(mappedBy="product")
 	@LazyCollection(LazyCollectionOption.FALSE)
-	Set<Image> images=new HashSet<>();
+	private Set<Image> images=new HashSet<>();
 	
-	String pdfPath;
+	private String pdfPath;
 	
-	String prodColor;
-	double prodWeight;
-	String prodBrand;
+	private String prodColor;
+	private double prodWeight;
+	private String prodBrand;
 	
-	String prodStatus;
+	private String prodStatus;
 	
 	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)
@@ -71,12 +71,12 @@ public class Product {
 	
 	@OneToMany(mappedBy="product",cascade = CascadeType.PERSIST)
 	@LazyCollection(LazyCollectionOption.FALSE)
-	Set<Comment> comments=new HashSet<>();
+	private Set<Comment> comments=new HashSet<>();
 	
 	@ManyToOne
 	@LazyCollection(LazyCollectionOption.FALSE)
-	@JsonIgnore
-	Seller seller;
+//	@JsonIgnore
+	private Seller seller;
 
 	public String getProdId() {
 		return prodId;

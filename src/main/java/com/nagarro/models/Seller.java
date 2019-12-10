@@ -23,25 +23,25 @@ public class Seller {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	long sellerId;
+	private long sellerId;
 	
-	String ownerName;
+	private String ownerName;
 	String companyName;
 	
-	String address;
+	private String address;
 	
-	String email;
+	private String email;
 	
-	String telephone;
+	private String telephone;
 	
-	String GSTnumber;
+	private String GSTnumber;
 	
-	String password;
-	String status;
+	private String password;
+	private String status;
 	
 	@OneToMany(mappedBy="seller")
 	@LazyCollection(LazyCollectionOption.FALSE)
-	Set<Product> products=new HashSet<>();
+	private Set<Product> products=new HashSet<>();
 
 	public long getSellerId() {
 		return sellerId;

@@ -19,18 +19,15 @@ import com.nagarro.services.ImageService;
 
 @Path("/files")
 public class ImageController {
-	
+
 	@Autowired
-	ImageService imageService;
-	
-	@Autowired
-	AdminService adminService;
+	private ImageService imageService;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/image/all/{product_id}")
-	public Response getImagesByProductId(@PathParam("product_id") String prodId) {
-        
+	public Response getImagesByProductId(@PathParam("product_id") String prodId) throws Exception {
+
 		Set<Image> images = imageService.getImageByProductId(prodId);
 		if (images.isEmpty()) {
 			return Response.status(Status.OK).entity(null).build();
@@ -38,6 +35,5 @@ public class ImageController {
 		return Response.status(Status.OK).entity(new GenericEntity<Set<Image>>(images) {
 		}).build();
 	}
-	
 
 }

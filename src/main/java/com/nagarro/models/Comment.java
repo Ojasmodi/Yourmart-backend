@@ -24,13 +24,13 @@ public class Comment {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	long commentId;
+	private long commentId;
 	
-	String commentValue;
+	private String commentValue;
 	
-	String commentByUserId;
+	private String commentByUserId;
 	
-	String commentByUserName;
+	private String commentByUserName;
 	
 	@Column(nullable = false)
 	@Temporal(TemporalType.TIMESTAMP)

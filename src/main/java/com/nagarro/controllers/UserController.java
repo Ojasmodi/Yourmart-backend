@@ -19,19 +19,19 @@ import com.nagarro.services.SellerService;
 public class UserController {
 
 	@Autowired
-	SellerService sellerService;
-	
-	@Autowired
-	AdminService adminService;
+	private SellerService sellerService;
 
-//	 /api/v1/seller/login
-//	 method:POST
-//	 Parameters: adminname:String and password:String as body params
+	@Autowired
+	private AdminService adminService;
+
+	// /api/v1/seller/login
+	// method:POST
+	// Parameters: adminname:String and password:String as body params
 	@POST
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/seller/login")
-	public Response loginSeller(Seller currentSeller ) throws Exception {
+	public Response loginSeller(Seller currentSeller) throws Exception {
 
 		currentSeller = sellerService.authenticateSeller(currentSeller.getEmail(), currentSeller.getPassword());
 		if (currentSeller == null) {
@@ -47,11 +47,11 @@ public class UserController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Path("/admin/login")
-	public Response loginAdmin(Admin currentAdmin) throws Exception  {
+	public Response loginAdmin(Admin currentAdmin) throws Exception {
 		currentAdmin = adminService.authenticateAdmin(currentAdmin.getEmail(), currentAdmin.getPassword());
 		if (currentAdmin == null) {
 			return Response.status(Status.OK).entity(null).build();
 		}
 		return Response.status(Status.OK).entity(currentAdmin).build();
-		}
+	}
 }

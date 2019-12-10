@@ -15,24 +15,21 @@ import com.nagarro.repositories.ImageRepository;
 public class ImageService {
 	
 	@Autowired
-	ImageRepository imageRepository;
+	private ImageRepository imageRepository;
 	
 	@Autowired
-	ProductService productService;
-	
-	@Autowired
-	Product product;
+	private ProductService productService;
 	
 	// method to add/save a new Image
 	public void saveImage(Set<Image> newImages) {
-		Iterator it=newImages.iterator();
+		Iterator<Image> it=newImages.iterator();
 		while(it.hasNext()) {
 			imageRepository.save((Image)it.next());
 		}
 	}
 
     // method to get image by productId
-	public Set<Image> getImageByProductId(String prodId) {
+	public Set<Image> getImageByProductId(String prodId) throws Exception {
 		Product product=productService.findByProductId(prodId);
 		Set<Image> images=product.getImages();
 		return images;
@@ -40,8 +37,7 @@ public class ImageService {
 
 	// method to update path of primary image/primary image of a particular product
 	@Transactional
-	public void updatePathOfPrimaryImage(String fileLocation, long imageId) {
-		System.out.println(fileLocation+" DFD"+ imageId);
+	public void updatePathOfPrimaryImage(String fileLocation, long imageId) throws Exception {
 		imageRepository.updatePathOfPrimaryImage(fileLocation, imageId);
 		
 	}

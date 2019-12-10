@@ -10,12 +10,12 @@ import com.nagarro.controllers.ImageController;
 import com.nagarro.controllers.ProductController;
 import com.nagarro.controllers.SellerController;
 import com.nagarro.controllers.UserController;
+import com.nagarro.utils.Notifier;
 
 @Component
 @ApplicationPath("/api/v1")
 public class JerseyConfiguration extends ResourceConfig {
 
-	
 	// adding the classes which will be needed for api request
 	public JerseyConfiguration() {
 		register(UserController.class);

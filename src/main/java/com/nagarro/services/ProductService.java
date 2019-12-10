@@ -32,37 +32,37 @@ import com.nagarro.utils.FileUploader;
 public class ProductService {
 
 	@Autowired
-	Product product;
+	private Product product;
 
 	@Autowired
-	ProductRepository productRepository;
+	private ProductRepository productRepository;
 
 	@Autowired
-	Seller seller;
+	private Seller seller;
 
 	@Autowired
-	SellerService sellerService;
+	private SellerService sellerService;
 
 	@Autowired
-	ImageService imageService;
+	private ImageService imageService;
 
 	@Autowired
-	ImageRepository imageRepository;
+	private ImageRepository imageRepository;
 
 	@Autowired
-	Image image;
-	
+	private Image image;
+
 	@Autowired
-	FileUploader fileupload;
+	private FileUploader fileupload;
 
 	// method to product to find by product Id
-	public Product findByProductId(String id) {
+	public Product findByProductId(String id) throws Exception {
 		Product product = productRepository.findById(id).orElse(null);
 		return product;
 	}
 
 	// method to add new product
-	public Product addProduct(HttpServletRequest request) {
+	public Product addProduct(HttpServletRequest request) throws Exception {
 		String fileLocation;
 		HashMap<String, String> hm = new HashMap<String, String>();
 		Set<Image> Images = new HashSet<Image>();
@@ -83,8 +83,9 @@ public class ProductService {
 							hm.put(fieldName, fieldValue);
 						} else {
 							// item is image or pdf
-							if (itemName.endsWith("png") || itemName.endsWith("jpg") || itemName.endsWith("jpeg")) {
-								fileLocation = fileupload.uploadFileToDirectory(item, itemName, Constants.IMAGE_UPLOAD_PATH);
+							if (itemName.endsWith("png") || itemName.endsWith("jfif") || itemName.endsWith("jpg") || itemName.endsWith("jpeg")) {
+								fileLocation = fileupload.uploadFileToDirectory(item, itemName,
+										Constants.IMAGE_UPLOAD_PATH);
 								Image img = new Image();
 								img.setImagePath(fileLocation);
 								if (fieldName.equals("primaryImage")) {
@@ -93,7 +94,8 @@ public class ProductService {
 								Images.add(img);
 							} else if (itemName.endsWith("pdf") || itemName.endsWith("doc")
 									|| itemName.endsWith("txt")) {
-								fileLocation = fileupload.uploadFileToDirectory(item, itemName, Constants.DOC_UPLOAD_PATH);
+								fileLocation = fileupload.uploadFileToDirectory(item, itemName,
+										Constants.DOC_UPLOAD_PATH);
 								product.setPdfPath(fileLocation);
 							}
 						}
@@ -178,8 +180,7 @@ public class ProductService {
 		product.setProdId(String.valueOf(UUID.randomUUID()));
 	}
 
-
-	//method to get all products
+	// method to get all products
 	public List<Product> getAllProducts() throws Exception {
 		List<Product> allProducts = productRepository.findAll();
 		return allProducts;
@@ -203,7 +204,7 @@ public class ProductService {
 		return product;
 	}
 
-	//method to update status of the product
+	// method to update status of the product
 	@Transactional
 	public boolean updateStatusOfProduct(Product currentProduct) {
 		currentProduct.setUpdatedOn(new Date());
@@ -219,56 +220,9 @@ public class ProductService {
 
 	// method of update primary Image or pdf document of the existing product
 	@Transactional
-	public boolean updateFilesOfProduct(HttpServletRequest request, String prodId) {
+	public boolean updateFilesOfProduct(HttpServletRequest request, String prodId)  throws Exception{
 		String fileLocation;
-			FileItemFactory factory = new DiskFileItemFactory();
-			ServletFileUpload fileUpload = new ServletFileUpload(factory);
-			try {
-				List<FileItem> items = fileUpload.parseRequest(request);
-				if (items != null) {
-					Iterator<FileItem> iter = items.iterator();
-
-					while (iter.hasNext()) {
-						final FileItem item = iter.next();
-						if(item.getFieldName().equals("primaryImage")) {
-							fileLocation = fileupload.uploadFileToDirectory(item, item.getName(), Constants.IMAGE_UPLOAD_PATH);
-							long imageID=0;
-							product=getProductByProductId(prodId);
-							product.setUpdatedOn(new Date());
-							Set<Image> images=product.getImages();
-							for(Image i:images) {
-								if(i.getIsPrimaryImage()) {
-                                    imageID=i.getImageId();
-								}
-							}
-							imageService.updatePathOfPrimaryImage(fileLocation,imageID);
-							
-						}
-						else {
-							fileLocation = fileupload.uploadFileToDirectory(item, item.getName(), Constants.DOC_UPLOAD_PATH);
-							productRepository.updatePdfPath(fileLocation,prodId);
-						}
-					}
-				}
-
-			} catch (FileUploadException e) {
-				e.printStackTrace();
-				return false;
-			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			}
-		return true;
-	}
-	
-	
-// method to add images to the existing product
-	public boolean addNewImagesOfProduct(HttpServletRequest request, long sellerId,String prodId) throws Exception {
-		String fileLocation;
-		product=findByProductId(prodId);
-		seller=sellerService.findBySellerId(sellerId);
 		FileItemFactory factory = new DiskFileItemFactory();
-		Set<Image> images=new HashSet<>();
 		ServletFileUpload fileUpload = new ServletFileUpload(factory);
 		try {
 			List<FileItem> items = fileUpload.parseRequest(request);
@@ -277,24 +231,27 @@ public class ProductService {
 
 				while (iter.hasNext()) {
 					final FileItem item = iter.next();
-						fileLocation = fileupload.uploadFileToDirectory(item, item.getName(), Constants.IMAGE_UPLOAD_PATH);
-						Image img=new Image();
-						img.setImagePath(fileLocation);
-						images.add(img);
+					if (item.getFieldName().equals("primaryImage")) {
+						fileLocation = fileupload.uploadFileToDirectory(item, item.getName(),
+								Constants.IMAGE_UPLOAD_PATH);
+						long imageID = 0;
+						product = getProductByProductId(prodId);
+						product.setUpdatedOn(new Date());
+						Set<Image> images = product.getImages();
+						for (Image i : images) {
+							if (i.getIsPrimaryImage()) {
+								imageID = i.getImageId();
+							}
+						}
+						imageService.updatePathOfPrimaryImage(fileLocation, imageID);
+
+					} else {
+						fileLocation = fileupload.uploadFileToDirectory(item, item.getName(),
+								Constants.DOC_UPLOAD_PATH);
+						productRepository.updatePdfPath(fileLocation, prodId);
+					}
 				}
 			}
-		product.setImages(images);
-		product.setSeller(seller);
-		product.setUpdatedOn(new Date());
-		productRepository.save(product);
-		Iterator<Image> it = images.iterator();
-		while (it.hasNext()) {
-			Image img = (Image) it.next();
-			img.setProduct(product);
-			product.getImages().add(img);
-		}
-		imageService.saveImage(product.getImages());
-		sellerService.addSeller(seller);
 
 		} catch (FileUploadException e) {
 			e.printStackTrace();
@@ -303,7 +260,57 @@ public class ProductService {
 			e.printStackTrace();
 			return false;
 		}
-	return true;
+		return true;
+	}
+
+// method to add images to the existing product
+	public boolean addNewImagesOfProduct(HttpServletRequest request, long sellerId, String prodId) throws Exception {
+		String fileLocation;
+		product = findByProductId(prodId);
+		seller = sellerService.findBySellerId(sellerId);
+		FileItemFactory factory = new DiskFileItemFactory();
+		Set<Image> images = new HashSet<>();
+		ServletFileUpload fileUpload = new ServletFileUpload(factory);
+		try {
+			List<FileItem> items = fileUpload.parseRequest(request);
+			if (items != null) {
+				Iterator<FileItem> iter = items.iterator();
+
+				while (iter.hasNext()) {
+					final FileItem item = iter.next();
+					fileLocation = fileupload.uploadFileToDirectory(item, item.getName(), Constants.IMAGE_UPLOAD_PATH);
+					Image img = new Image();
+					img.setImagePath(fileLocation);
+					images.add(img);
+				}
+			}
+			product.setImages(images);
+			product.setSeller(seller);
+			product.setUpdatedOn(new Date());
+			productRepository.save(product);
+			Iterator<Image> it = images.iterator();
+			while (it.hasNext()) {
+				Image img = (Image) it.next();
+				img.setProduct(product);
+				product.getImages().add(img);
+			}
+			imageService.saveImage(product.getImages());
+			sellerService.addSeller(seller);
+
+		} catch (FileUploadException e) {
+			e.printStackTrace();
+			return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	@Transactional
+	public List<Product> findProductsWithStatusNEWorREVIEWSinceMoreThanFiveDays() throws Exception {
+		List<Product> products = productRepository.findProductsWithStatusNEWorREVIEWSinceMoreThanFiveDays(new Date(),"NEW","REVIEW");
+		return products;
 	}
 
 }

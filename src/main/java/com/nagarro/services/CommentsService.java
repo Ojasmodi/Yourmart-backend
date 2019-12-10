@@ -9,31 +9,39 @@ import com.nagarro.models.Comment;
 import com.nagarro.models.Product;
 import com.nagarro.models.Seller;
 import com.nagarro.repositories.CommentRepository;
+import com.nagarro.utils.SendMail;
 
 @Service
 public class CommentsService {
 	
 	@Autowired
-	CommentRepository commentRepository;
+	private CommentRepository commentRepository;
 	
 	@Autowired
-	Comment comment;
+	private Comment comment;
 	
 	@Autowired
-	ProductService productService;
+	private ProductService productService;
 	
 	@Autowired
-	Product product;
+	private Product product;
+	
+	@Autowired
+	private SendMail sendMailer;
+	
+	@Autowired
+	private Seller seller;
 	
 
 	// method to add a comment to a rejected product
 	public Comment addCommentToProduct(Comment newComment, String prodId) throws Exception {
 		newComment.setDateOfComment(new Date());
 		product=productService.getProductByProductId(prodId);
+		seller=product.getSeller();
 		newComment.setProduct(product);
 		comment=commentRepository.save(newComment);
-		return comment;
-		
+		sendMailer.sendMail(seller.getEmail());
+		return comment;	
 	}
 
 }

@@ -9,14 +9,14 @@ import javax.persistence.Id;
 public class Admin {
 
 	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	long id;
+	private long id;
 	
-    String username;
+	private String username;
     
     @Id
-    String email;
+    private String email;
 	
-	String password;
+    private String password;
 
 	public long getId() {
 		return id;

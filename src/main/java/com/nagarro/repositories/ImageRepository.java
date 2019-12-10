@@ -12,7 +12,7 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
 
 	@Modifying
 	@Query("update Image set imagePath=?1 where imageId=?2")
-	void updatePathOfPrimaryImage(String fileLocation, long imageId);
+	public void updatePathOfPrimaryImage(String fileLocation, long imageId);
 
 
 

@@ -5,9 +5,11 @@ import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -23,10 +25,10 @@ import com.nagarro.services.SellerService;
 public class SellerController {
 
 	@Autowired
-	SellerService sellerService;
+	private SellerService sellerService;
 
 	@Autowired
-	Seller seller;
+	private Seller seller;
 
 	@POST
 	@Path("/add")
@@ -37,7 +39,7 @@ public class SellerController {
 		seller = sellerService.addSeller(newSeller);
 		return Response.status(Status.OK).entity(seller).build();
 	}
-	
+
 	@POST
 	@Path("/update/status")
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -51,26 +53,44 @@ public class SellerController {
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/all")
 	public Response getAllSellers() throws Exception {
-		
-		List<Seller> sellers= sellerService.getAllSellers();
-		
+
+		List<Seller> sellers = sellerService.getAllSellers();
+
 		if (sellers == null) {
 			return Response.status(Status.OK).entity(null).build();
 		}
 		return Response.status(Status.OK).entity(sellers).build();
 	}
-	
+
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("/get/{sellerId}")
 	public Response getSellerById(@PathParam("sellerId") long id) throws Exception {
-		
-		Seller seller= sellerService.findBySellerId(id);
-		
+
+		Seller seller = sellerService.findBySellerId(id);
+
 		if (seller == null) {
 			return Response.status(Status.OK).entity(null).build();
 		}
 		return Response.status(Status.OK).entity(seller).build();
 	}
+	
+	
+	@PUT
+	@Path("/update/status/sellerIds")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response approveSelectedSellers(@QueryParam("sellerIds") final String sIds) throws Exception {
+
+		String[] sellerIds=sIds.split(",");;
+			
+		for(int i=0;i<sellerIds.length;i++) {
+			seller=sellerService.findBySellerId(Long.parseLong(sellerIds[i]));
+			seller.setStatus("APPROVED");
+			sellerService.addSeller(seller);
+		}
+		return Response.status(Status.OK).entity("true").build();
+	}
+	
+
 
 }

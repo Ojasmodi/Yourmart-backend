@@ -9,6 +9,4 @@ import com.nagarro.models.Admin;
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, String> {
 
-
-
 }

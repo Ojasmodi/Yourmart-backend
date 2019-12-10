@@ -26,7 +26,7 @@ public class Image {
 	
 	@JsonIgnore
 	@ManyToOne
-	Product product;
+	private Product product;
 
 	public long getImageId() {
 		return imageId;
